@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Street Kings Africa</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:#101820;
+ color:white;
+ font-family:Arial;
+ text-align:center;
+}
+header{
+ padding:15px;
+ background:#080d12;
+}
+h1{color:#ffbd35;margin:8px}
+#game{
+ width:100%;
+ max-width:450px;
+ height:65vh;
+ min-height:400px;
+ background:#333;
+ margin:auto;
+ position:relative;
+ overflow:hidden;
+ border:3px solid #ffbd35;
+}
+canvas{width:100%;height:100%}
+.info{
+ display:flex;
+ justify-content:space-around;
+ padding:12px;
+ color:#ffbd35;
+}
+.controls{
+ display:flex;
+ justify-content:center;
+ gap:35px;
+ padding:15px;
+}
+button{
+ background:#ffbd35;
+ border:0;
+ border-radius:12px;
+ padding:17px 30px;
+ font-size:23px;
+ font-weight:bold;
+}
+#start{
+ padding:12px 25px;
+ font-size:18px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🏎️ STREET KINGS AFRICA</h1>
+<p>RULE THE ROAD!</p>
+</header>
+
+<div class="info">
+<span>🏆 SCORE: <b id="score">0</b></span>
+<span>🚀 SPEED: <b id="speed">1</b></span>
+</div>
+
+<div id="game">
+<canvas id="canvas"></canvas>
+</div>
+
+<p id="message">Ready to race?</p>
+<button id="start">START RACE</button>
+
+<div class="controls">
+<button id="left">⬅️</button>
+<button id="right">➡️</button>
+</div>
+
+<p>STREET KINGS AFRICA © 2026</p>
+
+<script>
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+
+canvas.width=400;
+canvas.height=600;
+
+let player={x:180,y:490,w:42,h:75};
+let enemies=[];
+let score=0;
+let running=false;
+let road=0;
+let speed=4;
+let keys={};
+
+function car(x,y,color){
+ ctx.fillStyle=color;
+ ctx.fillRect(x,y,42,75);
+ ctx.fillStyle="#111";
+ ctx.fillRect(x+5,y+12,32,18);
+ ctx.fillRect(x+5,y+48,32,15);
+ ctx.fillStyle="#ddd";
+ ctx.fillRect(x+5,y+3,9,5);
+ ctx.fillRect(x+28,y+3,9,5);
+}
+
+function draw(){
+ ctx.fillStyle="#16733a";
+ ctx.fillRect(0,0,400,600);
+
+ ctx.fillStyle="#444";
+ ctx.fillRect(45,0,310,600);
+
+ ctx.fillStyle="white";
+ ctx.fillRect(55,0,4,600);
+ ctx.fillRect(341,0,4,600);
+
+ for(let i=-40;i<640;i+=100){
+ ctx.fillStyle="#fff";
+ ctx.fillRect(197,i+road,6,50);
+ }
+
+ car(player.x,player.y,"#ffbd35");
+
+ enemies.forEach(e=>car(e.x,e.y,e.color));
+}
+
+function spawn(){
+ enemies.push({
+ x:Math.random()>0.5?115:245,
+ y:-90,
+ color:["red","#167bff","white"][Math.floor(Math.random()*3)]
+ });
+}
+
+function loop(){
+ if(!running)return;
+
+ ctx.clearRect(0,0,400,600);
+
+ if(keys.left)player.x-=5;
+ if(keys.right)player.x+=5;
+
+ player.x=Math.max(65,Math.min(293,player.x));
+
+ road=(road+speed)%100;
+
+ if(Math.random()<0.025)spawn();
+
+ enemies.forEach(e=>{
+ e.y+=speed;
+ if(e.y>610)e.remove=true;
+
+ if(
+ player.x<e.x+38 &&
+ player.x+42>e.x &&
+ player.y<e.y+70 &&
+ player.y+75>e.y
+ ){
+ running=false;
+ document.getElementById("message").innerText=
+ "🏁 RACE OVER! Final score: "+score;
+ document.getElementById("start").innerText="RACE AGAIN";
+ }
+ });
+
+ enemies=enemies.filter(e=>!e.remove);
+
+ score++;
+ document.getElementById("score").innerText=score;
+ document.getElementById("speed").innerText=Math.floor(speed);
+
+ draw();
+
+ if(running)requestAnimationFrame(loop);
+}
+
+function start(){
+ score=0;
+ speed=4;
+ enemies=[];
+ player.x=180;
+ running=true;
+ document.getElementById("message").innerText="🔥 RACE IN PROGRESS!";
+ document.getElementById("start").innerText="RESTART";
+ loop();
+}
+
+document.getElementById("start").onclick=start;
+
+document.getElementById("left").ontouchstart=()=>keys.left=true;
+document.getElementById("left").ontouchend=()=>keys.left=false;
+document.getElementById("right").ontouchstart=()=>keys.right=true;
+document.getElementById("right").ontouchend=()=>keys.right=false;
+
+document.onkeydown=e=>{
+ if(e.key==="ArrowLeft")keys.left=true;
+ if(e.key==="ArrowRight")keys.right=true;
+};
+document.onkeyup=e=>{
+ if(e.key==="ArrowLeft")keys.left=false;
+ if(e.key==="ArrowRight")keys.right=false;
+};
+
+draw();
+</script>
+
+</body>
+  </html>
